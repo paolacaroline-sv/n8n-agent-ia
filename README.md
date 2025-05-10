@@ -44,6 +44,9 @@ Devido a limitações da conta de teste gratuito, as duas estruturas ficaram no 
 ### **1. Atualização Automática da Base de Conhecimento**
 Essa parte do fluxo garante que, sempre que um arquivo for criado ou atualizado no **Google Drive**, o sistema processe o conteúdo e atualize a base de conhecimento do agente.
 
+![workflow n8n documentação](https://i.imgur.com/YKY6pwk.png)
+
+
 #### **Etapas:**
 1. **File Updated / File Created**: Gatilhos que monitoram mudanças no Google Drive.
 2. **Set File ID**: Identifica campos relevantes do trigger, para facilitar a estruturação do workflow.
@@ -60,6 +63,8 @@ Essa parte do fluxo garante que, sempre que um arquivo for criado ou atualizado 
 
 ### **2. Atendimento via Telegram**
 Essa parte do fluxo cuida de toda a interação com os usuários no Telegram, utilizando IA para fornecer respostas personalizadas e contextualizadas.
+
+![workflow n8n telegram](https://i.imgur.com/YfFC53Y.png)
 
 #### **Etapas:**
 1. **Telegram Trigger**: Recebe mensagens enviadas pelos usuários.

@@ -1,0 +1,879 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.Mensagem }}",
+        "options": {
+          "systemMessage": "Seu nome é ***, você é um assistente pessoal. Seu objetivo é ajudar o usuário em tudo relacionado ao time: modalidades, creators, loja oficial, eventos e campanhas.\nComunique-se de forma energética, moderna e com atitude, usando emojis de forma moderada. Use girias do nicho esportivo quando o usuário demonstrar conhecimento.\nAntes de elaborar qualquer resposta, acesse tools. Utilize as informações contidas nesse RAG como base para suas respostas. \nSuas respostas devem ser claras, diretas e sempre alinhadas com o espírito do time. Oriente o usuário para o site oficial ou WhatsAPP para assuntos que requerem suporte técnico.\nNunca invente informações, discuta temas sensíveis ou fale de outros time.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        12,
+        1160
+      ],
+      "id": "9a407cee-a708-4564-87ce-b3ca3a010d18",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1120,
+        1010
+      ],
+      "id": "ba68ffb3-0074-4efa-bc51-6f8a5522b1fd",
+      "name": "Telegram Trigger",
+      "webhookId": "1547e98b-1088-4940-bd71-36f8e86687ad"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d2a5f417-bdec-4a38-9c5b-606434b52f28",
+              "name": "username",
+              "value": "={{ $json.message.chat.username }}",
+              "type": "string"
+            },
+            {
+              "id": "bf90c148-c201-4eb2-a5f2-8e71f45decd8",
+              "name": "Mensagem",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -680,
+        910
+      ],
+      "id": "3b340970-8b7f-4e22-84c5-1f26026ed77f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        612,
+        1160
+      ],
+      "id": "28a9bc75-5637-4163-a053-c7cd1722117a",
+      "name": "Telegram",
+      "webhookId": "b1c897ba-02c9-4f6d-b68c-b78ec15816ea"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "55fcc232-1350-4828-a529-24c53db73682",
+              "name": "file_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -900,
+        200
+      ],
+      "id": "6231c8c9-60b3-44e3-afaf-f51a9efb83a1",
+      "name": "Set file_id"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Set file_id').item.json.file_id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -460,
+        200
+      ],
+      "id": "e252c2b1-b119-4b52-b16c-532cd93226aa",
+      "name": "Google Drive"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        200
+      ],
+      "id": "dcf7f1f2-5810-494a-b508-599ec2b27d36",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.1,
+      "position": [
+        -4,
+        0
+      ],
+      "id": "e0853ed4-e646-4b63-b0f9-af42f0e0971b",
+      "name": "Supabase Vector Store"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.data }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "file_id",
+                "value": "={{ $('Set file_id').item.json.file_id }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        100,
+        222.5
+      ],
+      "id": "0fbb7175-cc5a-4926-95af-ae318b45f1a9",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 2000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        188,
+        420
+      ],
+      "id": "c8d5d3d3-c967-4817-bf2c-47df5b2b8669",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "",
+          "mode": "url"
+        },
+        "event": "fileUpdated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        100
+      ],
+      "id": "fca21429-8111-4456-9861-c59b52cd97fe",
+      "name": "Google Drive Trigger1"
+    },
+    {
+      "parameters": {
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.1,
+      "position": [
+        116,
+        1582.5
+      ],
+      "id": "7e98d4c7-627a-45b9-8360-455bbb535e32",
+      "name": "Supabase Vector Store1"
+    },
+    {
+      "parameters": {
+        "name": "=user_documents",
+        "description": "=Contains all the users documents that you can check for context to answer user questions"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1,
+      "position": [
+        220,
+        1382.5
+      ],
+      "id": "3b8da0f2-7a41-4ebf-9aee-c36dfaebcb0c",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "=customKey",
+        "sessionKey": "={{ $('Edit Fields').item.json.username }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        100,
+        1380
+      ],
+      "id": "a19562ec-6929-4103-a287-46af485f63e1",
+      "name": "Postgres Chat Memory"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1_z7gVqkM5IhIhDu3KeNHwPnrp7v_zBAD",
+          "mode": "list",
+          "cachedResultName": "Arquivos IA",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1_z7gVqkM5IhIhDu3KeNHwPnrp7v_zBAD"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        300
+      ],
+      "id": "89321919-a278-4218-9c53-d07ed68ea546",
+      "name": "Google Drive Trigger"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        412,
+        1580
+      ],
+      "id": "b6f89d2b-0dba-48e5-a04a-b21247e63d69",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-large",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -20,
+        220
+      ],
+      "id": "3191e495-c915-475b-965b-7893b21af5e4",
+      "name": "Embeddings OpenAI"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a65be955-bf94-4d43-876a-e4091e8e8502",
+              "leftValue": "={{ $json.message.from.is_bot }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "964294eb-da4f-429c-83c5-73c8725d5943",
+              "leftValue": "={{ $json.message.chat.type }}",
+              "rightValue": "private",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -900,
+        1010
+      ],
+      "id": "5424739b-40a3-476e-b239-767c2a86cef0",
+      "name": "Filtro usuário real"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        1110
+      ],
+      "id": "a7b6dbd8-d6e3-4d2e-8932-06de1a5e0c71",
+      "name": "Ignorar"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1vFHDPRoo2zWJs0tOdZ0HuLyRQ5_tEZfpgMA0v411I-M",
+          "mode": "list",
+          "cachedResultName": "Leads - Telegram",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vFHDPRoo2zWJs0tOdZ0HuLyRQ5_tEZfpgMA0v411I-M/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Contatos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vFHDPRoo2zWJs0tOdZ0HuLyRQ5_tEZfpgMA0v411I-M/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Contato": "={{ $('Filtro usuário real').item.json.message.from.username }}",
+            "Nome": "={{ $('Filtro usuário real').item.json.message.from.first_name }} {{ $('Filtro usuário real').item.json.message.from.last_name }}"
+          },
+          "matchingColumns": [
+            "Contato"
+          ],
+          "schema": [
+            {
+              "id": "Contato",
+              "displayName": "Contato",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -460,
+        910
+      ],
+      "id": "2c6f2b9f-1f6a-426c-8258-2e2d01cb946d",
+      "name": "Captação de Leads"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        476,
+        200
+      ],
+      "id": "46c3695b-f45a-40a1-b3ba-7489e09c3872",
+      "name": "Fim de execução"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        612,
+        660
+      ],
+      "id": "d2a63350-ad87-42d2-95aa-fcac4890dd4a",
+      "name": "Fim de execução1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        832,
+        1160
+      ],
+      "id": "bf735712-a8e5-4251-b023-f96f116463c3",
+      "name": "Fim de execução2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        204,
+        1780
+      ],
+      "id": "8b7eb020-e859-4579-a460-89af9d7b3c02",
+      "name": "Embeddings OpenAI1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d551dc2d-c5cb-474b-9606-583b21e5e161",
+              "leftValue": "={{ $('Edit Fields').item.json.Mensagem }}",
+              "rightValue": "/start",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        910
+      ],
+      "id": "a6b3352e-6101-41b8-bede-9c350e67165b",
+      "name": "Primeira mensagem"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "BEM VINDO, meu torcedor!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        186,
+        660
+      ],
+      "id": "2fe1f325-9985-4e5f-8773-dfcd17e61060",
+      "name": "Boas vindas",
+      "webhookId": "2f74697a-73ca-40ac-a080-e155fea5f239"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "documents",
+        "filterType": "string",
+        "filterString": "=metadata->>file_id=like.*{{ $json.file_id }}*"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -680,
+        200
+      ],
+      "id": "dea50489-e2af-41d9-9e0a-d3c3cf97e8cd",
+      "name": "Deletar arquivo antigo",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -20,
+        1380
+      ],
+      "id": "9851dfae-5a6c-49b2-bce8-cb607b60bb41",
+      "name": "OpenAI Chat Model1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filtro usuário real",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Captação de Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram": {
+      "main": [
+        [
+          {
+            "node": "Fim de execução2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set file_id": {
+      "main": [
+        [
+          {
+            "node": "Deletar arquivo antigo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Set file_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set file_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtro usuário real": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ignorar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Captação de Leads": {
+      "main": [
+        [
+          {
+            "node": "Primeira mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Fim de execução",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Primeira mensagem": {
+      "main": [
+        [
+          {
+            "node": "Boas vindas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Boas vindas": {
+      "main": [
+        [
+          {
+            "node": "Fim de execução1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deletar arquivo antigo": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "",
+  "meta": {
+    "instanceId": "be308de74d180460df567190f42344c004ead7544821e7acd3f9b7de72cc1f59"
+  },
+  "tags": []
+}
